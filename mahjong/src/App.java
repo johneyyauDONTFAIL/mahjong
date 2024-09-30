@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 
 public class App{
-	  public App() {
+	  public static void main(String[] args) {
 			Player p1 = new Player("A");
 			Player p2 = new Player("B");
 			Player p3 = new Player("C");

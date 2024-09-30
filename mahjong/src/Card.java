@@ -1,6 +1,7 @@
 import java.util.EnumSet;
 import java.util.Set;
 
+
 public class Card implements Comparable<Card>{
 	public enum Suit{
 		萬(Numbers),
