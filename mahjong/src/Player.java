@@ -2,10 +2,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Player {
 	List<Card> handCards;
-	List<Card> deskCards;
+	List<List<Card>> deskCards;
 	String name;
 	public Player(String name) {
 		handCards = new ArrayList<>();
@@ -14,6 +15,10 @@ public class Player {
 	}
 	public List<Card> getHandCards(){
 		return handCards;
+	}
+	public List<List<Card>> getdeskCards(){return deskCards;}
+	public List<Card> getAllCards(){
+		return Stream.concat(handCards.stream(), deskCards.stream().flatMap(c->c.stream())).toList();
 	}
 	public String getName() {
 		return name;
@@ -34,7 +39,14 @@ public class Player {
 					})
 				.collect(Collectors.joining(","));
 		if(deskCards.size()>0) {
-			result += " ||| "+deskCards.stream().map(Card::toString).collect(Collectors.joining(","));
+			String desktop = "";
+			for(List<Card> cList:deskCards){
+				String comb = "";
+				comb = cList.stream().map(Card::toString).collect(Collectors.joining("-"));
+				desktop += String.format("[%s] ",comb);
+			}
+			result+=" ||| "+desktop;
+			//result += " ||| "+deskCards.stream().flatMap(c->c.stream().map(Card::toString)).collect(Collectors.joining(","));
 		}
 		return result;
 	}
@@ -47,15 +59,24 @@ public class Player {
 		throw new Exception("Invalid Drop");
 	}
 	public void pong(List<Card> indexList,Card drop) {
-		deskCards.addAll(indexList.stream().limit(2).toList());
-		deskCards.add(drop);
-		Collections.sort(deskCards);
-		handCards.removeAll(indexList.stream().limit(2).toList());
+		List<Card> temp = new ArrayList<>(indexList);
+		temp.add(drop);
+		Collections.sort(temp);
+		deskCards.add(temp);
+		handCards.removeAll(indexList);
 	}
 	public void gang(List<Card> indexList,Card drop) {
-		deskCards.addAll(indexList.stream().limit(3).toList());
-		deskCards.add(drop);
-		Collections.sort(deskCards);
-		handCards.removeAll(indexList.stream().limit(3).toList());
+		List<Card> temp = new ArrayList<>(indexList);
+		temp.add(drop);
+		Collections.sort(temp);
+		deskCards.add(temp);
+		handCards.removeAll(indexList);
 	}
+    public void up(List<Card> upList, Card drop) {
+		List<Card> temp = new ArrayList<>(upList);
+		temp.add(drop);
+		Collections.sort(temp);
+		deskCards.add(temp);
+		handCards.removeAll(upList);
+    }
 }

@@ -1,6 +1,8 @@
+import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
-
 
 public class Card implements Comparable<Card>{
 	public enum Suit{
@@ -32,6 +34,7 @@ public class Card implements Comparable<Card>{
 	}
 	
 	private static final Set<Value> Numbers = EnumSet.of(Card.Value.一,Card.Value.二,Card.Value.三,Card.Value.四,Card.Value.五,Card.Value.六,Card.Value.七,Card.Value.八,Card.Value.九);
+	public static List<Value> getNumbers(){return Arrays.asList(Card.Value.一,Card.Value.二,Card.Value.三,Card.Value.四,Card.Value.五,Card.Value.六,Card.Value.七,Card.Value.八,Card.Value.九);}
 	public final Suit suit;
 	public final Value value;
 	public final int rank;
@@ -72,10 +75,32 @@ public class Card implements Comparable<Card>{
 		switch (suit){
 		case 中:
 			return String.format("%s",value);
+			//return "Zhong";
 		case 發:
 			return String.format("%s",value);
+			//return "Fa";
 		case 白:
 			return String.format("%s",value);
+			//return "Bai";
+//		case 萬:
+//			return String.format("%dM",value.rank);
+//		case 索:
+//			return String.format("%$s",value.rank);
+//		case 筒:
+//			return String.format("%dT",value.rank);
+//		case 風:
+//			if(value==Value.東){
+//				return "East";
+//			}
+//			else if(value==Value.南){
+//				return "South";
+//			}
+//			else if(value==Value.西){
+//				return "West";
+//			}
+//			else if(value==Value.北){
+//				return "North";
+//			}
 		default:
 			return String.format("%s%s",value,suit);
 		}
