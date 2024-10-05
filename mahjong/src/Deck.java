@@ -9,9 +9,11 @@ import java.util.Set;
 public class Deck {
 	List<Card> cards;
 	List<Player> players;
-	public Deck(List<Player> players) {
+	Scanner in;
+	public Deck(List<Player> players,Scanner in) {
 		cards = new ArrayList<>();
 		this.players = players;
+		this.in = in;
 		try {
 			for(Card.Suit suit:Card.Suit.values()) {
 				for(Card.Value value:Card.Value.values()) {
@@ -84,26 +86,55 @@ public class Deck {
 			throw new Exception("Invalid rank.");
 		}
 	}
-	public void draw(Player p,boolean msg) {
-		Card card  = cards.remove(0);
+	public void draw(Player p,boolean msg,boolean last) {
+		Card card  = last?cards.removeLast():cards.remove(0);
 		if(msg)
-			System.out.println("Drawed: "+card.toString()+ "(" +card.getValue().getRank()+ ")");
+			System.out.println("Drawed: "+card.toString());
 		p.draw(card);
 		Collections.sort(p.getHandCards());
-		// if(checkMingGong(card)){
-			
-		// }
+		System.out.println(p.getName()+" round! Your Cards: "+p.listCards());
+		if(checkMingGong(card,p.getdeskCards())){
+			System.out.println("You can GONG! Do you want to do so? (Y/N)");
+			String response = in.next();
+			if(response.equalsIgnoreCase("Y")) {
+				p.mingGong(card);
+				System.out.println("Player "+p.getName()+" GONG!!!!");
+				draw(p, true,true);
+				Collections.sort(p.getHandCards());
+			}
+		}
+		else{
+			Card temp = checkDarkGong(p.getHandCards());
+			if (temp!=null) {
+				System.out.println("You can GONG! Do you want to do so? (Y/N)");
+				String response = in.next();
+				if (response.equalsIgnoreCase("Y")) {
+					p.darkGong(temp);
+					System.out.println("Player " + p.getName() + " GONG!!!!");
+					System.out.println(p.listCards());
+					draw(p, true,true);
+					Collections.sort(p.getHandCards());
+				}
+			}
+		}
 	}
 
-	public void drawLast(Player p,boolean msg) {
-		Card card  = cards.remove(cards.size()-1);
-		if(msg)
-			System.out.println("Drawed: "+card.toString()+ "(" +card.getValue().getRank()+ ")");
-		p.draw(card);
-		Collections.sort(p.getHandCards());
+	private boolean checkMingGong(Card card,List<List<Card>> deskCard) {
+		for(List<Card> comb:deskCard) {
+			return comb.stream().allMatch(c->c.getRank()==card.getRank());
+		}
+		return false;
+	}
+	private Card checkDarkGong(List<Card> handCard) {
+		for(Card card:handCard) {
+			if (handCard.stream().filter(c -> c.getRank() == card.getRank()).count() == 4) {
+				return card;
+			}
+		}
+		return null;
 	}
 	
-	public void giveCard(boolean debug,Scanner in) throws Exception {
+	public void giveCard(boolean debug) throws Exception {
 		if(debug){
 			System.err.println("Please input card by rank line by line:");
 			for(Player p:players){
@@ -117,13 +148,13 @@ public class Deck {
 		else{
 			for(Player p:players) {
 				for(int i =0;i<13;i++) {
-					draw(p,false);
+					draw(p,false,false);
 				}
 			}
 		}
 	}
 	
-	public String drop(Player p,int index,Scanner in){
+	public String drop(Player p,int index){
 //		System.out.println("start droping!!!");
 		int actionedPlayer = -1;
 		String action = "";
@@ -136,80 +167,82 @@ public class Deck {
 					continue;
 				}
 				else if(action.equals("")){
-					List<Card> pongList = checkPong(o.getHandCards(),temp);
-					List<Card> upList = checkUp(o.getHandCards(),temp);
-					if(checkHu(o.getAllCards(), temp)){
+					if(checkHu(o.getHandCards(), temp)){
 						System.out.println(String.format("Player %s can HU!!! Do you want to do so? (Y/N)", o.getName()));
 						String response = in.next();
 						if(response.equalsIgnoreCase("Y")) {
 							//o.hu(pongList,temp);
 							System.out.println("Player "+o.getName()+" HU!!!!");
+							System.out.println("Winning Hand: "+o.listCards()+" ||| 出蔥:"+temp.toString());
 							action = "HU";
 							actionedPlayer = seq;
 						}
 					}
-					if(pongList.size()==2) {						
+					if(checkPong(o.getHandCards(),temp)==3){						
+						if(action.equals("")) {
+							System.out.println(o.listCards());
+							System.out.println(String.format("Player %s can GONG! Do you want to do so? (Y/N)", o.getName()));
+							String response = in.next();
+							if(response.equalsIgnoreCase("Y")) {
+								o.gong(temp);
+								draw(o,true,true);
+								System.out.println("Player "+o.getName()+" GONG!!!!");
+								action ="GONG";
+								actionedPlayer=seq;
+							}
+						}
+					}
+					if(checkPong(o.getHandCards(),temp)==2) {
 						if(action.equals("")) {
 							System.out.println(o.listCards());
 							System.out.println(String.format("Player %s can PONG! Do you want to do so? (Y/N)", o.getName()));
 							String response = in.next();
 							if(response.equalsIgnoreCase("Y")) {
-								o.pong(pongList,temp);
+								o.pong(temp);
 								System.out.println("Player "+o.getName()+" PONG!!!!");
 								action ="PONG";
 								actionedPlayer=seq;
 							}
 						}
 					}
-					else if(pongList.size()==3){						
-						if(action.equals("")) {
-							System.out.println(o.listCards());
-							System.out.println(String.format("Player %s can GONG! Do you want to do so? (Y/N)", o.getName()));
-							String response = in.next();
-							if(response.equalsIgnoreCase("Y")) {
-								o.gang(pongList,temp);
-								drawLast(o,true);
-								System.out.println("Player "+o.getName()+" GANG!!!!");
-								action ="GONG";
-								actionedPlayer=seq;
-							}
-						}
-					}			
-					if(upList.size()>=2) {						
-						if(action.equals("")) {
-							System.out.println(o.listCards());
-							System.out.println(String.format("Player %s can UP! Do you want to do so?", o.getName()));
-							String response = in.next();
-							if(response.equalsIgnoreCase("Y")) {
-								int j = 1;
-								if(upList.size()>2){
-									System.out.print("Available Options: ");
-									for(int i=0;i<upList.size()-1;i++){
-										System.out.print(String.format(" [%s,%s] (%d)",upList.get(i),upList.get(i+1),j++));
-										i++;
-										if(i==upList.size()-1){
-											System.out.println();
+					if(players.indexOf(o)==(players.indexOf(p)+1)%4) {
+						List<Card> upList = checkUp(o.getHandCards(),temp);
+						if(upList.size()>=2) {						
+							if(action.equals("")) {
+								System.out.println(o.listCards());
+								System.out.println(String.format("Player %s can UP! Do you want to do so?", o.getName()));
+								String response = in.next();
+								if(response.equalsIgnoreCase("Y")) {
+									int j = 1;
+									if(upList.size()>2){
+										System.out.print("Available Options: ");
+										for(int i=0;i<upList.size()-1;i++){
+											System.out.print(String.format(" [%s,%s] (%d)",upList.get(i),upList.get(i+1),j++));
+											i++;
+											if(i==upList.size()-1){
+												System.out.println();
+											}
+											else{
+												System.out.print(" || ");
+											}
+										}
+										System.out.println();
+										String choose = in.next();
+										if(Integer.parseInt(choose)>j){
+											System.out.println("Invalid option!");
+											continue;
 										}
 										else{
-											System.out.print(" || ");
+											o.up(Arrays.asList(upList.get(Integer.parseInt(choose)*2-1),upList.get(Integer.parseInt(choose)*2-1-1)), temp);
 										}
 									}
-									System.out.println();
-									String choose = in.next();
-									if(Integer.parseInt(choose)>j){
-										System.out.println("Invalid option!");
-										continue;
-									}
 									else{
-										o.up(Arrays.asList(upList.get(Integer.parseInt(choose)*2-1),upList.get(Integer.parseInt(choose)*2-1-1)), temp);
+										o.up(upList,temp);
 									}
+									System.out.println("Player "+o.getName()+" UP!!!!");
+									action ="UP";
+									actionedPlayer=seq;
 								}
-								else{
-									o.up(upList,temp);
-								}
-								System.out.println("Player "+o.getName()+" UP!!!!");
-								action ="UP";
-								actionedPlayer=seq;
 							}
 						}
 					}
@@ -222,20 +255,8 @@ public class Deck {
 		return actionedPlayer==-1?"": action+"%PARAM%"+actionedPlayer;
 	}
 	
-	private List<Card> checkPong(List<Card> cards,Card drop) {
-		//int num = cards.stream().filter(c->c.getSuit().equals(drop.getSuit())&&c.getValue().equals(drop.getValue())).collect(Collectors.toList()).size();	
-		List<Card> result = new ArrayList<>();
-//		for(int i=0;i<cards.size();i++){
-//			Card tempCard = cards.get(i);
-//			if(tempCard.getSuit().equals(drop.getSuit())&&tempCard.getValue().equals(drop.getValue())) {
-//				result.add(i);
-//			}
-//		}
-			long cnt = cards.stream().filter(c->c.getRank()==drop.getRank()).count();
-			if(cnt>=2) {
-				result = cards.stream().filter(c->c.getRank()==drop.getRank()).toList();
-			}
-			return result;
+	private long checkPong(List<Card> cards,Card drop) {
+		return cards.stream().filter(c->c.getRank()==drop.getRank()).count();
 	}
 	
 	private List<Card> checkUp(List<Card> cards,Card drop){
@@ -274,10 +295,10 @@ public class Deck {
 		for(Card c:tempCard){
 			cardsArr[c.getRank()]++;
 		}
-		return hu(cardsArr,0,0);
+		return hu(cardsArr,0,0,cards.size()/3);
 	}
-	private static boolean hu(int[] card,int pairCount, int tripletCount){
-        if(pairCount==1 && tripletCount==4){
+	private static boolean hu(int[] card,int pairCount, int tripletCount,int targetTripletCount){
+        if(pairCount==1 && tripletCount==targetTripletCount){
             return true;
         }
         for(int i=0;i<card.length;i++){
@@ -287,7 +308,7 @@ public class Deck {
 
             if(card[i]>=3){
                 card[i]-=3;
-                if(hu(card,pairCount,tripletCount+1)){
+                if(hu(card,pairCount,tripletCount+1,targetTripletCount)){
                     return true;
                 }
                 card[i]+=3;
@@ -295,7 +316,7 @@ public class Deck {
             if(pairCount==0){
                 if(card[i]>=2){
                     card[i]-=2;
-                    if(hu(card,pairCount+1,tripletCount)){
+                    if(hu(card,pairCount+1,tripletCount,targetTripletCount)){
                         return true;
                     }
                     card[i]+=2;
@@ -305,7 +326,7 @@ public class Deck {
                 card[i]-=1;
                 card[i+1]-=1;
                 card[i+2]-=1;
-                if(hu(card, pairCount, tripletCount+1)){
+                if(hu(card, pairCount, tripletCount+1, targetTripletCount)){
                     return true;
                 }
                 card[i]+=1;

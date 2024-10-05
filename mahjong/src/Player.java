@@ -52,25 +52,23 @@ public class Player {
 	}
 	public Card drop(int index) throws Exception {
 		if(handCards.size()>=index) {
-			Card temp = handCards.remove(--index);
+			Card temp = handCards.remove(index-1);
 	    	System.out.println("Dropped: "+temp.toString());
 			return temp;
     	}
 		throw new Exception("Invalid Drop");
 	}
-	public void pong(List<Card> indexList,Card drop) {
-		List<Card> temp = new ArrayList<>(indexList);
+	public void pong(Card drop) {
+		List<Card> temp = handCards.stream().filter(c->c.value==drop.value).limit(2).collect(Collectors.toList());
+		handCards.removeAll(temp);
 		temp.add(drop);
-		Collections.sort(temp);
 		deskCards.add(temp);
-		handCards.removeAll(indexList);
 	}
-	public void gang(List<Card> indexList,Card drop) {
-		List<Card> temp = new ArrayList<>(indexList);
+	public void gong(Card drop) {
+		List<Card> temp = handCards.stream().filter(c->c.value==drop.value).collect(Collectors.toList());
+		handCards.removeAll(temp);
 		temp.add(drop);
-		Collections.sort(temp);
 		deskCards.add(temp);
-		handCards.removeAll(indexList);
 	}
     public void up(List<Card> upList, Card drop) {
 		List<Card> temp = new ArrayList<>(upList);
@@ -79,4 +77,20 @@ public class Player {
 		deskCards.add(temp);
 		handCards.removeAll(upList);
     }
+	public void mingGong(Card card) {
+		handCards.removeIf(c->c.value==card.value);
+		for (List<Card> cList : deskCards) {
+			if (cList.size() == 3) {
+				if (cList.get(0).value == card.value) {
+					cList.add(card);
+					break;
+				}
+			}
+		}
+	}
+	public void darkGong(Card card) {
+		List<Card> temp = handCards.stream().filter(c->c.getRank()==card.getRank()).collect(Collectors.toList());
+		handCards.removeAll(temp);
+		deskCards.add(temp);
+	}
 }
