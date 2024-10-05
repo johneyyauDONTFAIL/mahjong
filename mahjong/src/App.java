@@ -20,7 +20,7 @@ public class App{
 //		    System.out.println("Deck has "+deck.getRemainingCard() + " cards");
 		    deck.shuffle();
 //		    deck.giveCard(true,in);
-		    deck.giveCard(true);
+		    deck.giveCard(false);
 		    System.out.println("p1: "+p1.listCards());
 		    System.out.println("p2: "+p2.listCards());
 		    System.out.println("p3: "+p3.listCards());
