@@ -34,6 +34,7 @@ public class App{
 				clearScreen();
 				if(action){
 					action=false;
+					System.out.println(String.format("%s round!  Your Cards: %s",p.getName(),p.listCards()));
 				}
 				else{
 					deck.draw(p,true,false);

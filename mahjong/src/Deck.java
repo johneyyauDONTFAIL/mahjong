@@ -148,7 +148,7 @@ public class Deck {
 		else{
 			for(Player p:players) {
 				for(int i =0;i<13;i++) {
-					draw(p,false,false);
+					p.draw(cards.removeFirst());;
 				}
 			}
 		}
