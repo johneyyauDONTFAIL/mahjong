@@ -1,10 +1,14 @@
+
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-public class Card implements Comparable<Card>{
+public class Card implements Comparable<Card>,Serializable{
+
+	private static final long serialVersionUID = 2884460149315280672L;
+
 	public enum Suit{
 		萬(Numbers),
 		索(Numbers),
@@ -35,9 +39,9 @@ public class Card implements Comparable<Card>{
 	
 	private static final Set<Value> Numbers = EnumSet.of(Card.Value.一,Card.Value.二,Card.Value.三,Card.Value.四,Card.Value.五,Card.Value.六,Card.Value.七,Card.Value.八,Card.Value.九);
 	public static List<Value> getNumbers(){return Arrays.asList(Card.Value.一,Card.Value.二,Card.Value.三,Card.Value.四,Card.Value.五,Card.Value.六,Card.Value.七,Card.Value.八,Card.Value.九);}
-	public final Suit suit;
-	public final Value value;
-	public final int rank;
+	private final Suit suit;
+	private final Value value;
+	private final int rank;
 	public Card(Suit suit, Value value) throws Exception {
 		if(!suit.validValues(value)) {
 			throw new Exception(String.format("Invalid value for %s",suit));
@@ -70,6 +74,9 @@ public class Card implements Comparable<Card>{
 	public int getRank() {
 		return rank;
 	}
+	public String getRankStr() {
+		return String.valueOf(rank);
+	}
 	@Override
 	public String toString() {
 		switch (suit){
@@ -82,12 +89,12 @@ public class Card implements Comparable<Card>{
 		case 白:
 			return String.format("%s",value);
 			//return "Bai";
-//		case 萬:
-//			return String.format("%dM",value.rank);
-//		case 索:
-//			return String.format("%$s",value.rank);
-//		case 筒:
-//			return String.format("%dT",value.rank);
+		case 萬:
+			return String.format("%dM",value.rank);
+		case 索:
+			return String.format("%ds",value.rank);
+		case 筒:
+			return String.format("%dT",value.rank);
 //		case 風:
 //			if(value==Value.東){
 //				return "East";
@@ -106,8 +113,42 @@ public class Card implements Comparable<Card>{
 		}
 	}
 
+	public String toAsciiString(){
+		String string = "";
+		switch (suit){
+		case 中:
+			return String.format(".------.\n|%s---- |\n| (\\/) |\n| :\\/: |\n| ZHONG|\n`------'",value);
+		case 發:
+			return String.format(".------.\n|%s--- |\n| $\\/$ |\n| $\\$: |\n| '-FA'|\n`------'",value);
+		case 白:
+			return String.format(".------.\n|%s-- |\n| (\\/) |\n| :\\/: |\n| 'BAI'|\n`------'",value);
+//		case 萬:
+//			return String.format(".------.\n|%d.--. |\n| :/\\: |\n| (__) |\n| '--'M|\n`------'",value.rank);
+//		case 索:
+//			return String.format(".------.\n|%d.--. |\n| :/\\: |\n| :\\/: |\n| '--'S|\n`------'",value.rank);
+//		case 筒:
+//			return String.format(".------.\n|%d.--. |\n| (\\/) |\n| :\\/: |\n| '--'T|\n`------'",value.rank);
+//		case 風:
+//			if(value==Value.東){
+//				return ".------.\n|EAST- |\n| &\\/& |\n| :\\/: |\n| '---'|\n`------'";
+//			}
+//			else if(value==Value.南){
+//				return ".------.\n|SOUTH |\n| (\\/) |\n| :\\/: |\n| '---'|\n`------'";
+//			}
+//			else if(value==Value.西){
+//				return ".------.\n|WEST- |\n| (\\/) |\n| :\\/: |\n| '---'|\n`------'";
+//			}
+//			else if(value==Value.北){
+//				return ".------.\n|NORTH |\n| (\\/) |\n| :\\/: |\n| '---'|\n`------'";
+//			}
+		default:
+			return String.format(".------.\n|%s.--. |\n| :/\\: |\n| (__) |\n| '--'%s|\n`------'",value,suit);
+		}
+	}
+
 	@Override
 	public int compareTo(Card o) {
 		return this.rank-o.rank;
 	}
+
 }
