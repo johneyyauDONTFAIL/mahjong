@@ -1,4 +1,4 @@
-
+package mpmj;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -81,33 +81,33 @@ public class Card implements Comparable<Card>,Serializable{
 	public String toString() {
 		switch (suit){
 		case 中:
-			return String.format("%s",value);
-			//return "Zhong";
+//			return String.format("%s",value);
+			return "Zhong";
 		case 發:
-			return String.format("%s",value);
-			//return "Fa";
+//			return String.format("%s",value);
+			return "Fa";
 		case 白:
-			return String.format("%s",value);
-			//return "Bai";
+//			return String.format("%s",value);
+			return "Bai";
 		case 萬:
 			return String.format("%dM",value.rank);
 		case 索:
 			return String.format("%ds",value.rank);
 		case 筒:
 			return String.format("%dT",value.rank);
-//		case 風:
-//			if(value==Value.東){
-//				return "East";
-//			}
-//			else if(value==Value.南){
-//				return "South";
-//			}
-//			else if(value==Value.西){
-//				return "West";
-//			}
-//			else if(value==Value.北){
-//				return "North";
-//			}
+		case 風:
+			if(value==Value.東){
+				return "East";
+			}
+			else if(value==Value.南){
+				return "South";
+			}
+			else if(value==Value.西){
+				return "West";
+			}
+			else if(value==Value.北){
+				return "North";
+			}
 		default:
 			return String.format("%s%s",value,suit);
 		}
@@ -117,32 +117,32 @@ public class Card implements Comparable<Card>,Serializable{
 		String string = "";
 		switch (suit){
 		case 中:
-			return String.format(".------.\n|%s---- |\n| (\\/) |\n| :\\/: |\n| ZHONG|\n`------'",value);
+			return ".------.\n|ZHONG |\n| (\\/) |\n| :\\/: |\n| ZHONG|\n`------'";
 		case 發:
-			return String.format(".------.\n|%s--- |\n| $\\/$ |\n| $\\$: |\n| '-FA'|\n`------'",value);
+			return ".------.\n|FA--- |\n| $\\/$ |\n| $\\$: |\n| '-FA'|\n`------'";
 		case 白:
-			return String.format(".------.\n|%s-- |\n| (\\/) |\n| :\\/: |\n| 'BAI'|\n`------'",value);
-//		case 萬:
-//			return String.format(".------.\n|%d.--. |\n| :/\\: |\n| (__) |\n| '--'M|\n`------'",value.rank);
-//		case 索:
-//			return String.format(".------.\n|%d.--. |\n| :/\\: |\n| :\\/: |\n| '--'S|\n`------'",value.rank);
-//		case 筒:
-//			return String.format(".------.\n|%d.--. |\n| (\\/) |\n| :\\/: |\n| '--'T|\n`------'",value.rank);
-//		case 風:
-//			if(value==Value.東){
-//				return ".------.\n|EAST- |\n| &\\/& |\n| :\\/: |\n| '---'|\n`------'";
-//			}
-//			else if(value==Value.南){
-//				return ".------.\n|SOUTH |\n| (\\/) |\n| :\\/: |\n| '---'|\n`------'";
-//			}
-//			else if(value==Value.西){
-//				return ".------.\n|WEST- |\n| (\\/) |\n| :\\/: |\n| '---'|\n`------'";
-//			}
-//			else if(value==Value.北){
-//				return ".------.\n|NORTH |\n| (\\/) |\n| :\\/: |\n| '---'|\n`------'";
-//			}
+			return ".------.\n|BAI-- |\n| (\\/) |\n| :\\/: |\n| 'BAI'|\n`------'";
+		case 萬:
+			return String.format(".------.\n|%d.--. |\n| :/\\: |\n| (__) |\n| '--'M|\n`------'",value.rank);
+		case 索:
+			return String.format(".------.\n|%d.--. |\n| :/\\: |\n| :\\/: |\n| '--'S|\n`------'",value.rank);
+		case 筒:
+			return String.format(".------.\n|%d.--. |\n| (\\/) |\n| :\\/: |\n| '--'T|\n`------'",value.rank);
+		case 風:
+			if(value==Value.東){
+				return ".------.\n|EAST- |\n| &\\/& |\n| :\\/: |\n| '---'|\n`------'";
+			}
+			else if(value==Value.南){
+				return ".------.\n|SOUTH |\n| (\\/) |\n| :\\/: |\n| '---'|\n`------'";
+			}
+			else if(value==Value.西){
+				return ".------.\n|WEST- |\n| (\\/) |\n| :\\/: |\n| '---'|\n`------'";
+			}
+			else if(value==Value.北){
+				return ".------.\n|NORTH |\n| (\\/) |\n| :\\/: |\n| '---'|\n`------'";
+			}
 		default:
-			return String.format(".------.\n|%s.--. |\n| :/\\: |\n| (__) |\n| '--'%s|\n`------'",value,suit);
+			return String.format("%s%s",value,suit);
 		}
 	}
 

@@ -1,4 +1,4 @@
-
+package mpmj;
 import java.io.Serializable;
 import java.util.*;
 
@@ -13,13 +13,16 @@ public class Action implements Comparable<Action>,Serializable{
 	private int order;
 	private List<List<Card>> options;
 	private boolean drawAction;
-	public Action(Type type,Player player,int order,List<List<Card>> options,boolean drawAction) {
+	private List<Object> huHands;
+	public Action(Type type,Player player,int order,List<List<Card>> options,boolean drawAction,List<Object> huHands) {
 		this.type = type;
 		this.player = player;
 		this.order = order;
 		this.drawAction = drawAction;
 		if(options!=null)
 			this.options=options;
+		if(huHands!=null)
+			this.huHands=huHands;
 		switch (type) {
 		case HU:
 			this.rank=4;
@@ -46,6 +49,9 @@ public class Action implements Comparable<Action>,Serializable{
 	}
 	public int getOrder() {
 		return order;
+	}
+	public List<Object> getHuHands(){
+		return huHands;
 	}
 	public List<List<Card>> getOptionsList() {
 		return options;

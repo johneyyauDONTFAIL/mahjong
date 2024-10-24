@@ -1,3 +1,4 @@
+package mpmj;
 import java.awt.*;
 import java.util.List;
 import javax.swing.*;
@@ -9,7 +10,7 @@ public class ClientGUI extends JFrame {
 
     public ClientGUI(Client client) {
         this.client = client;
-        setTitle(client.getPlayer().getName() + "'s Game");
+        setTitle("Client GUI");
         setSize(850, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new GridBagLayout());
@@ -61,9 +62,7 @@ public class ClientGUI extends JFrame {
         boardCardsPanel.removeAll();
         List<Card> boardCards = client.getCardsOnTable();
         for (Card card : boardCards) {
-            JTextArea cardLabel = new JTextArea(card.toAsciiString());
-            cardLabel.setEditable(false);
-            cardLabel.setFont(new Font("Monospaced", Font.PLAIN, 12));
+            JLabel cardLabel = new JLabel(card.toString());
             boardCardsPanel.add(cardLabel);
         }
         boardCardsPanel.revalidate();

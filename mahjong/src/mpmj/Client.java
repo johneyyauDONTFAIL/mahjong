@@ -1,4 +1,4 @@
-
+package mpmj;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
+
+import seq.Fan;
 
 
 
@@ -20,16 +22,15 @@ public class Client{
 	Scanner in;
 	private List<Card> cardsOnTable;
 	private Card dropCard;
+	private boolean gui;
 	private ClientGUI clientGUI;
 	public static void main(String[] args) {
-		String ip = args.length>1?args[1]:"127.0.0.1";
-		String debug = args.length>2?args[2]:"f";
-		Client client = new Client(args[0],ip,debug);
+		Client client = new Client(args[0],args.length>1?args[1]:"f",args.length>2?args[2]:"f");
 	}
 	
-	public Client(String name,String serverIp,String debug) {
+	public Client(String name,String debug,String gui) {
 		try {
-			this.socket = new Socket(serverIp,8086);
+			this.socket = new Socket("127.0.0.1",8086);
 			this.playerList = new ArrayList<>();
 			oos = new ObjectOutputStream(socket.getOutputStream());
 			//PrintWriter pw = new PrintWriter(oos);
@@ -38,6 +39,7 @@ public class Client{
 			//String name = in.nextLine();
 			this.player = new Player(name);
 			this.debug = debug.equals("t");
+			this.gui = gui.equals("t");
 			System.out.println("Connected to the Server!");
 			Thread serverHandler = new Thread(new ServerHandler(socket));
 			serverHandler.start();
@@ -82,7 +84,8 @@ public class Client{
 		case start:
 			started = true;
 			this.startGame();
-			clientGUI = new ClientGUI(this);
+			if(gui)
+				clientGUI = new ClientGUI(this);
 			System.out.println("Game is ready to start!");
 			System.out.println("Your Info:"+this.player.toString());
 			break;
@@ -93,13 +96,13 @@ public class Client{
 				this.player.draw(data);;
 				System.out.println("Game Start! Your card: "+this.player.getHandCards().toString());
 			}
-			clientGUI.updatePlayerCards();
+			if(gui)
+				clientGUI.updatePlayerCards();
 			break;
 		case draw:
 			Card dataCard = (Card)message.getContent();			
 			if(message.getPlayerId()==this.player.getPlayerId()) {
 				this.player.draw(dataCard);
-				this.clientGUI.updatePlayerCards();
 				System.out.println("Your Round! You Draw: "+dataCard);
 				// System.out.print("Please input the card index you want to drop: ");
 				// int index = in.nextInt() -1;
@@ -115,6 +118,10 @@ public class Client{
 				System.out.println("Your Card: "+this.player.listAllCardWithIndex());
 				System.out.print("Please input the card index you want to drop: ");
 				int dropIndex = in.nextInt() -1;
+				while(dropIndex>this.player.getHandCards().size() || dropIndex<0) {
+					System.out.print("Invalid Input! Please input the card index you want to drop: ");
+					dropIndex = in.nextInt() -1;
+				}
 				dropCard = this.player.drop(dropIndex);
 				sendMessage(new Message(Message.Type.drop,this.player.getPlayerId(),dropIndex));
 			}
@@ -122,8 +129,10 @@ public class Client{
 		case drop:
 			cardsOnTable.add((Card)message.getContent());
 			dropCard = (Card)message.getContent();
-			clientGUI.updateBoardCards();
-			clientGUI.updatePlayerCards();
+			if(gui) {
+				clientGUI.updateBoardCards();
+				clientGUI.updatePlayerCards();
+			}
 			if(message.getPlayerId()==this.player.getPlayerId()) {
 				break;
 			}
@@ -152,7 +161,7 @@ public class Client{
 					index = in.nextInt();
 				}
 				if(index==-1) {
-					sendMessage(new Message(Message.Type.confirmAction,this.player.getPlayerId(),new Action(Action.Type.PASS, this.player, index, null,actions.get(0).isDrawAction())));
+					sendMessage(new Message(Message.Type.confirmAction,this.player.getPlayerId(),new Action(Action.Type.PASS, this.player, index, null,actions.get(0).isDrawAction(),null)));
 					break;
 				}
 				Action selectedAction = actions.get(index-1);
@@ -171,10 +180,15 @@ public class Client{
 			}
 			break;
 		case perfromAction:
-			if(((Action)message.getContent()).getType()!=Action.Type.PASS) {
-				this.playerList.get(message.getPlayerId()).performAction((Action) message.getContent(),dropCard);
+			Action action = (Action)message.getContent();
+			if(action.getType()!=Action.Type.PASS) {
+				this.playerList.get(message.getPlayerId()).performAction(action,dropCard);
 				if((int)message.getPlayerId()!=this.player.getPlayerId()) {
-					System.out.printf("%s %s!\n",playerList.get(message.getPlayerId()).getName(),((Action) message.getContent()).getType());
+					System.out.printf("%s %s!\n",playerList.get(message.getPlayerId()).getName(),action.getType());
+					if(action.getType()==Action.Type.HU) {
+						playerList.get(message.getPlayerId()).setHandCard((List<Card>)action.getHuHands().get(0));
+						playerList.get(message.getPlayerId()).setDeskCard((List<Combination>)action.getHuHands().get(1));
+					}
 				}
 				else {
 					// System.out.println("Please select the card you want to drop: "+this.player.listAllCardWithIndex());

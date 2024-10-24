@@ -1,10 +1,19 @@
-
+package mpmj;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import seq.AllOneSuit;
+import seq.CommonHu;
+import seq.DoorClear;
+import seq.Fan;
+import seq.MixOneSuit;
+import seq.PongPongHu;
+import seq.ThirdteenYao;
 
 public class Player implements Serializable{
 
@@ -13,18 +22,23 @@ public class Player implements Serializable{
 	private List<Combination> deskCards;
 	private String name;
 	private int playerId;
+	private List<Fan> fanList;
 	public Player(String name) {
 		this.handCards = new ArrayList<>();
 		this.deskCards = new ArrayList<>();
 		this.name= name;
+		fanList = new ArrayList<>();
 	}
 	public List<Card> getHandCards(){
 		return this.handCards;
 	}
 	public List<Combination> getDeskCards(){return deskCards;}
-	// public List<Card> getAllCards(){
-	// 	return Stream.concat(handCards.stream(), deskCards.stream().flatMap(c->c.stream())).toList();
-	// }
+	 public List<Object> getAllCards(){
+	 	return Stream.concat(handCards.stream(), deskCards.stream()).toList();
+	 }
+	public List<Fan> getFanList(){
+		return fanList;
+	}
 	public String getName() {
 		return name;
 	}
@@ -34,9 +48,12 @@ public class Player implements Serializable{
 	public void setPlayerId(int i) {
 		this.playerId=i;
 	}
-//	public void setHandCard(List<Card> cards) {
-//		this.handCards = cards;
-//	}
+	public void setHandCard(List<Card> cards) {
+		this.handCards = cards;
+	}
+	public void setDeskCard(List<Combination> deskCards) {
+		this.deskCards = deskCards;
+	}
 	public void draw(Card c) {
 		handCards.add(c);
 		Collections.sort(handCards);
@@ -135,6 +152,10 @@ public class Player implements Serializable{
 		List<Card> tempCard = new ArrayList<>(handCards);
 		if(drop!=null)
 			tempCard.add(drop);
+		ThirdteenYao thirdteenYao = new ThirdteenYao(tempCard,deskCards);
+		if(thirdteenYao.checkFan()) {
+			return true;
+		}
 		int[] cardsArr = new int[35];
 		for(Card c:tempCard){
 			cardsArr[c.getRank()]++;
@@ -181,6 +202,7 @@ public class Player implements Serializable{
         return false;
 
 	}
+	@SuppressWarnings("unchecked")
 	public void performAction(Action action,Card dropCard) {
 		System.out.println("Player "+this.getName()+" performed action: "+action.getType());
 		switch (action.getType()) {
@@ -201,6 +223,9 @@ public class Player implements Serializable{
 			break;
 		case HU:
 			hu(dropCard);
+			break;
+		case ZIMO:
+			zimo();
 			break;
 		default:
 			break;
@@ -239,11 +264,13 @@ public class Player implements Serializable{
 
 	public void hu(Card dropCard){
 		handCards.add(dropCard);
-		System.out.println(name+" Hu!! ||| "+listAllCards());
+		calculateFan();
+		System.out.println(name+" Hu!! ||| "+listAllCards()+" ||| "+fanList+"||| Total Fan:"+fanList.stream().mapToInt(Fan::getScore).sum());
 	}
 
-	public void zimo(){
-		System.out.println(name+" Zimo!! ||| "+listAllCards());
+	public void zimo(){		
+		calculateFan();
+		System.out.println(name+" Zimo ||| "+listAllCards()+" ||| "+fanList+"||| Total Fan:"+fanList.stream().mapToInt(Fan::getScore).sum());
 	}
 
 	public void mingKong(Card dropCard){
@@ -320,5 +347,32 @@ public class Player implements Serializable{
 			}
 		}
 		return false;
+	}
+	
+	public void calculateFan() {
+		ThirdteenYao thirdteenYao = new ThirdteenYao(handCards,deskCards);
+		AllOneSuit allOneSuit = new AllOneSuit(handCards, deskCards);
+		MixOneSuit mixOneSuit = new MixOneSuit(handCards, deskCards);
+		PongPongHu pongPongHu = new PongPongHu(handCards, deskCards);
+		DoorClear doorClear = new DoorClear(handCards, deskCards);
+		CommonHu commonHu = new CommonHu(handCards, deskCards);
+		if(thirdteenYao.checkFan()) {
+			fanList.add(thirdteenYao);
+		}
+		if(allOneSuit.checkFan()) {
+			fanList.add(mixOneSuit);
+		}
+		if(mixOneSuit.checkFan()) {
+			fanList.add(mixOneSuit);
+		}
+		if(pongPongHu.checkFan()) {
+			fanList.add(pongPongHu);
+		}
+		if(doorClear.checkFan()) {
+			fanList.add(doorClear);
+		}
+		if(commonHu.checkFan()) {
+			fanList.add(commonHu);
+		}
 	}
 }

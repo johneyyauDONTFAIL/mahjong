@@ -1,4 +1,4 @@
-
+package mpmj;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -78,7 +78,7 @@ public class Deck {
 	}
 	public synchronized void giveCard(boolean debug) throws Exception {
 		if(debug){
-			System.err.println("Please input card by rank line by line:");
+			System.out.println("Please input card by rank line by line:");
 			for(Player p:players){
 				String cards = in.nextLine();
 				for(String i:cards.split(",")){
@@ -88,10 +88,10 @@ public class Deck {
 			}
 		}
 		else{
-		for(Player p:players) {
-			for(int i =0;i<13;i++) {
-				p.draw(cards.remove(0));
-			}
+			for(Player p:players) {
+				for(int i =0;i<13;i++) {
+					p.draw(cards.remove(0));
+				}
 			}
 		}
 	}
@@ -109,15 +109,19 @@ public class Deck {
 			if(p==playerOfRound)
 				continue;
 			else {
-				if(p.canHu(dropCard))
-					actions.add(new Action(Action.Type.HU, p,-1,null,false));
+				if(p.canHu(dropCard)) {
+					List<Object> temp = new ArrayList<>();
+					temp.add(p.getHandCards());
+					temp.add(p.getDeskCards());
+					actions.add(new Action(Action.Type.HU, p,-1,null,false,temp));
+				}
 				if(p.canPong(dropCard))
-					actions.add(new Action(Action.Type.PONG, p,-1,null,false));
+					actions.add(new Action(Action.Type.PONG, p,-1,null,false,null));
 				if(p.canKong(dropCard))
-					actions.add(new Action(Action.Type.KONG, p,-1,null,false));
+					actions.add(new Action(Action.Type.KONG, p,-1,null,false,null));
 				if(p.getPlayerId()==(playerOfRound.getPlayerId()+1)%4) {
 					if(p.canChow(dropCard).size()>0)
-						actions.add(new Action(Action.Type.CHOW, p,-1,p.canChow(dropCard),false));
+						actions.add(new Action(Action.Type.CHOW, p,-1,p.canChow(dropCard),false,null));
 				}
 			}
 		}
@@ -141,13 +145,16 @@ public class Deck {
 	public List<Action> checkDrawAction(Card draw,Player p) {
 		List<Action> actions = new ArrayList<>();
 		if(p.canMingKong(draw)){
-			actions.add(new Action(Action.Type.MINGKONG, p, -1, null,true));
+			actions.add(new Action(Action.Type.MINGKONG, p, -1, null,true,null));
 		}
 		if(p.canUmKong()){
-			actions.add(new Action(Action.Type.UMKONG, p, -1, null,true));
+			actions.add(new Action(Action.Type.UMKONG, p, -1, null,true,null));
 		}
 		if(p.canHu(null)){
-			actions.add(new Action(Action.Type.ZIMO, p, -1, null,true));
+			List<Object> temp = new ArrayList<>();
+			temp.add(p.getHandCards());
+			temp.add(p.getDeskCards());
+			actions.add(new Action(Action.Type.ZIMO, p, -1, null,true,temp));
 		}
 		return actions;
 	}

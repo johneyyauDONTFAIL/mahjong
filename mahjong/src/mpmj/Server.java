@@ -1,4 +1,4 @@
-
+package mpmj;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -21,12 +21,14 @@ public class Server {
     private List<Action> availableActions;
     private List<Action> availableDrawActions;
     private List<Action> confirmedActions;
+    private static boolean debug;
     
     public static void main(String[] args) {
-        new Server();
+        new Server(args.length>0?args[0]:"f");
     }
 
-    public Server() {
+    public Server(String debugOpt) {
+    	debug=debugOpt.equals("t");
         System.out.println("Opening Server");
         serverOn = true;
         try (ServerSocket serverSocket = new ServerSocket(8086)) {
@@ -118,6 +120,9 @@ public class Server {
             broadcastMessage(new Message(Message.Type.perfromAction,temp.getPlayer().getPlayerId(),temp));
             if(temp.getType()==Action.Type.KONG){
                 broadcastMessage(new Message(Message.Type.draw, temp.getPlayer().getPlayerId(), deck.draw(playerList.get(temp.getPlayer().getPlayerId()))));
+            }
+            else if(temp.getType()==Action.Type.HU ||temp.getType()==Action.Type.ZIMO) {
+                broadcastMessage(new Message(Message.Type.gameFinish,temp.getPlayer().getPlayerId(),temp.getPlayer()));
             }
             actioned=true;
         }
@@ -227,7 +232,7 @@ public class Server {
         deck = new Deck(playerList);
         System.out.println("Players List:\n" + playerList.stream().map(Player::toString).collect(Collectors.joining("\n")));
         try {
-            deck.giveCard(false);
+            deck.giveCard(debug);
             for (int i = 0; i < clientSockets.size(); i++) {
                 sendMessage(clientSockets.get(i), new Message(Message.Type.bulkdraw, playerList.get(i).getPlayerId(), playerList.get(i).allCardstoRank()), true);
             }
@@ -241,7 +246,7 @@ public class Server {
                     Card draw = deck.draw(playerOfRound);
                 	broadcastMessage(new Message(Message.Type.draw, playerOfRound.getPlayerId(), draw));
                     System.out.println(availableDrawActions);
-                    while(!(availableDrawActions = deck.checkDrawAction(draw,playerOfRound)).isEmpty()){
+                    while(!(availableDrawActions = deck.checkDrawAction(draw,playerOfRound)).isEmpty() && !gameFinish){
                         for(Action action:availableDrawActions){
                             System.out.printf("%s can %s! Waiting for their response...\n",playerOfRound.getName(),action.getType());
                         }
@@ -258,7 +263,6 @@ public class Server {
                     }
                 }
                 if(gameFinish){
-                    finishGame(playerOfRound);
                     break;
                 }
                 actioned=false;
@@ -285,7 +289,6 @@ public class Server {
                     performAction(confirmedActions);
             	}
                 if(gameFinish){
-                    finishGame(playerOfRound);
                     break;
                 }
                 if(!actioned)
@@ -299,6 +302,7 @@ public class Server {
     }
 
     private void finishGame(Player p){
+    	p.calculateFan();
         broadcastMessage(new Message(Message.Type.gameFinish,-1,p));
         System.out.println(p.getName()+" wins!");
     }
